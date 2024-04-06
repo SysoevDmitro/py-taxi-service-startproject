@@ -3,31 +3,33 @@ from django.contrib.auth.admin import UserAdmin
 from taxi.models import Manufacturer, Driver, Car
 
 
+@admin.register(Driver)
 class DriverAdmin(UserAdmin):
-    fieldsets = (
-        (None, {"fields": ("username", "password")}),
-        ("Personal info", {"fields": ("first_name", "last_name", "email")}),
-        ("Additional info", {"fields": ("driver_license", "phone_number")}),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
-        ("Important dates", {"fields": ("last_login", "date_joined")}),
-    )
-    add_fieldsets = (
-        (None, {
-            "classes": ("wide",),
-            "fields": ("username", "email", "password1", "password2", "driver_license", "phone_number"),
-        }),
-    )
-    search_fields = ("username", "email", "driver_license", "phone_number")
-    ordering = ("username",)
-    filter_horizontal = ("groups", "user_permissions",)
+    list_display = UserAdmin.list_display + ('license_number',)
+    fieldsets = (UserAdmin.fieldsets +
+                 (
+                     ("Additional info", {"fields": ("license_number",)}),
+                 ))
+    add_fieldsets = (UserAdmin.add_fieldsets +
+                     (
+                         ("Additional info", {"fields": (
+                             "first_name",
+                             "last_name",
+                             "email",
+                             "license_number",)}),
+                     ))
 
 
 class CarAdmin(admin.ModelAdmin):
-    search_fields = ["model"]
-    list_filter = ["manufacturer"]
+    list_display = ("model", "manufacturer", "driver")
+    search_fields = ("model",)
+    list_filter = ("manufacturer",)
+
+
+class ManufacturerAdmin(admin.ModelAdmin):
+    list_display = ("name", "country")
 
 
 # Register your models here.
-admin.site.register(Manufacturer)
-admin.site.register(Driver, DriverAdmin)
+admin.site.register(Manufacturer, ManufacturerAdmin)
 admin.site.register(Car, CarAdmin)
